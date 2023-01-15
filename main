@@ -1,0 +1,199 @@
+# Name: Minh Giang
+# Date: December 5, 2019
+# Project: Gumdrop Game
+# Description: The code creates an Candy Crush type of game.
+#   The user can determine how many rows and colums that it
+#   wants to play. The programs will calculate how many points
+#   the user has earned. This program also stops the user when they
+#   reach the maxium point that they allow.
+
+import random
+
+from simplegraphics import *
+
+#This function creates an empty board
+#Parameters: rows, cols, column.
+#Returns: 2-d list with all zeros
+def make_empty_board(rows, cols):
+    g = []
+    for row in range(0, rows): 
+        g.append([0] * cols)
+    return g
+
+#This function fills the borard with random numbers
+#Parameters: Board
+def fill_board(board):
+    for row in range(0, len(board)):
+        for col in range(0, len(board[0])):
+            if board[row][col] == 0:
+                board[row][col] = random.randint(1,4)
+
+#This function checks to see if the gum drop has neighbors vertically and horizontally
+#Parameter: Board, row, colum
+#Returns: True if there is gum Drop that has neighbor, but false if it does not
+def has_identical_neighbor(board, row, col):
+    if row != len(board)-1 and board[row][col] ==  board[row+1][col]:
+        return True
+    elif row != 0 and board[row][col] == board[row-1][col]:
+        return True
+    elif col != len(board[0])-1 and board[row][col] == board[row][col+1]:
+        return True
+    elif col != 0 and board[row][col] == board[row][col-1]:
+        return True
+    else:
+        return False
+                 
+            
+
+#This function changed any gum drop that is connected to -1(The gumdrop the user clicked)
+#Parameter: Board, num, number that is connected to -1
+#Returns: The negative -1
+def spread(board, num):
+    changed_num = 0
+    for row in range(0, len(board)):
+        for col in range(0, len(board[0])):
+            if board[row][col] == -1: 
+                if row != len(board)-1 and board[row+1][col] == num:
+                    board[row+1][col] = -1
+                    changed_num = changed_num + 1
+                if row != 0 and board[row-1][col] == num:
+                    board[row-1][col] = -1
+                    changed_num = changed_num + 1
+                if col != len(board[0])-1 and board[row][col+1] == num:
+                    board[row][col+1] = -1
+                    changed_num = changed_num + 1
+                if col != 0 and board[row][col-1] == num:
+                    board[row][col-1] = -1
+                    changed_num = changed_num + 1
+    return changed_num
+
+  
+#This function replaces the negative to zeros
+#Parameter: Board, board being looked at 
+def replace(board):
+    for row in range(0, len(board)):
+        for col in range(0, len(board[0])):
+            if board[row][col] == -1:
+                board[row][col] = 0
+    
+#This function counts how many that is diappeared
+#Parameter: Board, board looked at 
+#Returns: The total amount that is blank
+def count_blank(board):
+    total = 0
+    for row in range(0, len(board)):
+        for col in range(0, len(board[0])):
+            if board[row][col] == 0:
+                total += 1
+    return total
+
+#This function generattes new gum drops from the top when it is deleted
+#Parameter: Board
+
+def generatetop(board):
+    for row in range(0, len(board)):
+        for col in range(0, len(board[0])):
+            if board[row][col] == 0:
+                board[row][col] = random.randint(1,4)
+
+#This function calcuates how many points it will recieve when the Gum Drop disappears
+#Parameter: numberreplaced
+#Returns: How many points you earned
+def calc_points(numreplaced):
+        if numreplaced < 5:
+            numreplaced *= 10
+            return numreplaced 
+        elif numreplaced >= 5 and numreplaced < 10:
+            numreplaced *= 50
+            return numreplaced 
+        elif numreplaced >= 10:
+            numreplaced *= 100
+            return numreplaced 
+        
+#This function drops the Gum Drops when there is no more gum drops below it
+#Parameter: Board
+#Returns: The number of Gum Drops moved
+def gravity(board):
+    count = 0
+    for row in range(len(board)-1, 0, -1):
+        for col in range(0, len(board[0])):
+            if board[row][col] == 0 and board[row-1][col]!= 0:
+                board[row][col] = board[row-1][col]
+                board[row-1][col] = 0
+                count = count + 1
+            
+    return count
+
+#This function draws the color of the background and the color pieces
+#Parameter: Board
+def draw_board(board):
+    for row in range(0, len(board)):
+        for col in range(0, len(board[0])):
+            if board[row][col] == 1:
+                set_color("red")
+                draw_filled_circle(col * 40 + 20, row * 40 + 20, 20)
+            elif board[row][col] == 2:
+                set_color("blue")
+                draw_filled_circle(col * 40 + 20, row * 40 + 20, 20)
+            elif board[row][col] == 3:
+                set_color("green")
+                draw_filled_circle(col * 40 + 20, row * 40 + 20, 20)
+            elif board[row][col] == 4:
+                set_color("yellow")
+                draw_filled_circle(col * 40 + 20, row * 40 + 20, 20)
+            elif board[row][col] == -1:
+                set_color("white")
+                draw_filled_circle(col * 40 + 20, row * 40 + 20, 20)
+            elif board[row][col] == 0:
+                set_color("black")
+                draw_filled_circle(col * 40 + 20, row * 40 + 20, 20)
+                
+def main():
+    row = int(input("How many rows would you like? "))
+    col = int(input("How many columns would you like? "))
+    points = int(input("How many points would you like to play to? "))
+
+    board = make_empty_board(row, col)
+    fill_board(board)
+    print(board)
+    open_canvas(col*40, row* 40)
+    set_background_color_rgb(0, 0, 0)
+    draw_board(board)
+
+    
+    
+    currpoints = 0
+    while currpoints < points:
+        print("You have", currpoints, "points")
+        wait_for_click()
+        x = get_last_click_x()
+        y = get_last_click_y()
+        row = int(y/40)
+        col = int(x/40)
+        print("You clicked row",row,"column",col)
+        if has_identical_neighbor(board, row, col) == True:
+            num = board[row][col]
+            board[row][col] = -1
+            while spread(board, num) != 0:
+                spread(board, num)
+            draw_board(board)
+            replace(board)
+            newpoints = count_blank(board)
+            print("You've eliminated", newpoints,"gumdrops")
+            newerpoints = calc_points(newpoints)
+            currpoints += newerpoints
+            print("You earned", newerpoints,"points")
+            while gravity(board) != 0:
+                gravity(board) 
+            generatetop(board)
+            draw_board(board)
+        else:
+            print("Click another circle. No identical neighbor nearby")
+            
+    print("You have", currpoints, "points")
+    print("Congrats you've won the game! I would've been surprised if you lost")    
+        
+main()    
+    
+
+
